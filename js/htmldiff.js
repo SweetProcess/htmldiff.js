@@ -71,7 +71,7 @@
     var atomicTagsRegExp;
     // Added head and style (for style tags inside the body)
     var defaultAtomicTagsRegExp = new RegExp('^<(iframe|object|math|svg|script|video|head|style)');
-    
+
     /**
      * Checks if the current word is the beginning of an atomic tag. An atomic tag is one whose
      * child nodes should not be compared - the entire tag should be treated as one token. This
@@ -120,8 +120,8 @@
      * @return {boolean} True if the token can be wrapped inside a tag, false otherwise.
      */
     function isWrappable(token){
-        var is_img = /^<img[\s>]/.test(token);
-        return is_img|| isntTag(token) || isStartOfAtomicTag(token) || isVoidTag(token);
+        var is_img_or_a = /^<(img|a)[\s>]/.test(token);
+        return is_img_or_a|| isntTag(token) || isStartOfAtomicTag(token) || isVoidTag(token);
     }
 
     /**
@@ -288,6 +288,12 @@
             return '<img src="' + img[1] + '">';
         }
 
+        // If the token is an anchor element, grab its href attribute to include in the key.
+        var a = /^<a.*href=['"]([^"']*)['"].*>$/.exec(token);
+        if (a) {
+            return '<a href="' + a[1] + '">';
+        }
+
         // If the token is an object element, grab it's data attribute to include in the key.
         var object = /^<object.*data=['"]([^"']*)['"]/.exec(token);
         if (object) {
@@ -304,7 +310,7 @@
                 return start + end;
             } else {
                 return token;
-            } 
+            }
         }
 
         // If the token is an iframe element, grab it's src attribute to include in it's key.
@@ -943,8 +949,8 @@
      * @param {string} className (Optional) The class attribute to include in <ins> and <del> tags.
      * @param {string} dataPrefix (Optional) The data prefix to use for data attributes. The
      *      operation index data attribute will be named `data-${dataPrefix-}operation-index`.
-     * @param {string} atomicTags (Optional) List of atomic tag names. The list has to be in the 
-     *     form 'tag1|tag2|tag3|...' e. g. 'head|script|style|...'. If not used, the default list 
+     * @param {string} atomicTags (Optional) List of atomic tag names. The list has to be in the
+     *     form 'tag1|tag2|tag3|...' e. g. 'head|script|style|...'. If not used, the default list
      *     'iframe|object|math|svg|script|video|head|style' will be used.
      *
      * @return {string} The combined HTML content with differences wrapped in <ins> and <del> tags.
