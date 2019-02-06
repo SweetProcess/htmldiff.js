@@ -52,7 +52,7 @@ describe('Diff', function(){
 
       it('should wrap href changes', function(){
         expect(cut('<a href="a">a</a>', '<a href="b">a</a>')).to.equal(
-        '<del data-operation-index="0"><a href="a"></del><ins data-operation-index="0"><a href="b"></ins>a</a>');
+        '<del data-operation-index="0"><a href="a">a</a></del><ins data-operation-index="0"><a href="b">a</a></ins>');
       });
 
       it('should leave other attrs alone', function(){
