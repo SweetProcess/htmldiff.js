@@ -52,25 +52,31 @@ describe('Diff', function(){
 
       it('should wrap href changes', function(){
         expect(cut('<a href="a">a</a>', '<a href="b">a</a>')).to.equal(
-        '<del data-operation-index="0"><a href="a">a</a></del><ins data-operation-index="0"><a href="b">a</a></ins>');
+            '<a href="b"><del data-operation-index="1">(a) </del><ins data-operation-index="1">(b) </ins>a</a>');
       });
 
       it('should leave other attrs alone', function(){
         expect(cut('<a href="a" class="btn">a</a>', '<a href="b" class="btn">a</a>')).to.equal(
-        '<del data-operation-index="0"><a href="a" class="btn"></del><ins data-operation-index="0"><a href="b" class="btn"></ins>a</a>');
+            '<a href="b" class="btn"><del data-operation-index="1">(a) </del><ins data-operation-index="1">(b) </ins>a</a>');
       });
+
+      it('it should not detect changes for class', function(){
+        expect(cut('<a href="a" class="btn">a</a>', '<a href="a" class="btn-light">a</a>')).to.equal(
+            '<a href="a" class="btn-light">(a) a</a>');
+      });
+
 
       it('show two anchors as different if their href attributes are different', function() {
         var before = html_to_tokens('<a href="a.jpg">a</a>');
         var after = html_to_tokens('<a href="b.jpg">a</a>');
         var ops = calculate_operations(before, after);
-        expect(ops.length).to.equal(2);
-        expect(ops[0]).to.eql({
+        expect(ops.length).to.equal(3);
+        expect(ops[1]).to.eql({
           action: 'replace',
-          startInBefore: 0,
-          endInBefore: 0,
-          startInAfter: 0,
-          endInAfter: 0
+          startInBefore: 1,
+          endInBefore: 1,
+          startInAfter: 1,
+          endInAfter: 1
         });
       });
 
@@ -82,9 +88,9 @@ describe('Diff', function(){
         expect(ops[0]).to.eql({
           action: 'equal',
           startInBefore: 0,
-          endInBefore: 2,
+          endInBefore: 3,
           startInAfter: 0,
-          endInAfter: 2
+          endInAfter: 3
         });
       })
 

@@ -120,8 +120,8 @@
      * @return {boolean} True if the token can be wrapped inside a tag, false otherwise.
      */
     function isWrappable(token){
-        var is_img_or_a = /^<(img|a)[\s>]/.test(token);
-        return is_img_or_a|| isntTag(token) || isStartOfAtomicTag(token) || isVoidTag(token);
+        var is_img = /^<(img)[\s>]/.test(token);
+        return is_img || isntTag(token) || isStartOfAtomicTag(token) || isVoidTag(token);
     }
 
     /**
@@ -137,6 +137,18 @@
             string: currentWord,
             key: getKeyForToken(currentWord)
         };
+    }
+
+    function createExtraToken(currentWord) {
+        var string = extraContentForToken(currentWord);
+        if (string != null) {
+            return {
+                string: string,
+                key: string
+            }
+        } else {
+            return null
+        }
     }
 
     /**
@@ -190,6 +202,10 @@
                     } else if (isEndOfTag(char)){
                         currentWord += '>';
                         words.push(createToken(currentWord));
+                        var extraWord = createExtraToken(currentWord);
+                        if (extraWord != null) {
+                            words.push(extraWord);
+                        }
                         currentWord = '';
                         if (isWhitespace(char)){
                             mode = 'whitespace';
@@ -272,6 +288,22 @@
     }
 
     /**
+     * Allows altering the token so that matches can be customised based on the type of tag.
+     * @param {string} token The token to create the string for.
+     *
+     * @return {string} the string to be used in comparisons.
+     */
+    function extraContentForToken(token) {
+        // if its an a-tag put the href into the child content.
+        var a = /^<a.*href=['"]([^"']*)['"].*>$/.exec(token);
+        if (a) {
+            return '(' + a[1] + ') ';
+        } else {
+            return null;
+        }
+    };
+
+    /**
      * Creates a key that should be used to match tokens. This is useful, for example, if we want
      * to consider two open tag tokens as equal, even if they don't have the same attributes. We
      * use a key instead of overwriting the token because we may want to render the original string
@@ -286,12 +318,6 @@
         var img = /^<img.*src=['"]([^"']*)['"].*>$/.exec(token);
         if (img) {
             return '<img src="' + img[1] + '">';
-        }
-
-        // If the token is an anchor element, grab its href attribute to include in the key.
-        var a = /^<a.*href=['"]([^"']*)['"].*>$/.exec(token);
-        if (a) {
-            return '<a href="' + a[1] + '">';
         }
 
         // If the token is an object element, grab it's data attribute to include in the key.
